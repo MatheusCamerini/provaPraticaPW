@@ -3,12 +3,8 @@
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Filme;
-
+use Illuminate\Support\Facades\Storage;
 class FilmeController extends Controller{
-    public function index(){
-        $filmes = auth()->user()->filmes;
-        return view('filmes.index', compact('filmes'));
-    }
     public function create(Request $request){
         $request->validate([
             'nome' => 'required|max:30',
@@ -38,11 +34,13 @@ class FilmeController extends Controller{
     }
     public function destroy($id){
         $filme = Filme::findOrFail($id);
+        if ($filme->user_id !== auth()->id()) { abort(403, 'Acesso não autorizado'); }
         $filme->delete();
         return redirect()->route('dashboard')->with('success', 'Filme deletado com sucesso!');
     }
     public function edit(Request $request, $id){
         $filme = Filme::findOrFail($id);
+        if ($filme->user_id !== auth()->id()) { abort(403, 'Acesso não autorizado'); }
 
         $request->validate([
             'nome' => 'required|max:30',
@@ -72,5 +70,18 @@ class FilmeController extends Controller{
         return redirect()->route('dashboard')->with('success', 'Filme atualizado com sucesso!');
     }
 
+    public function show($id){
+        $filme = Filme::findOrFail($id);
+        return view('filmes.show', compact('filme'));
+    }
 
+    public function index(){
+        $filmes = Filme::all();
+        return view('filmes.index', compact('filmes'));
+    }
+    public function search(Request $request){
+        $query = $request->input('query');
+        $filmes = Filme::where('nome', 'like', '%' . $query . '%')->get();
+        return view('filmes.index', compact('filmes'));
+    }
 }
