@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 class UserController extends Controller
 {
+
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -15,7 +16,6 @@ class UserController extends Controller
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
-            // Cria o token de acesso
             $token = $user->createToken('auth_token')->plainTextToken;
             $request->session()->put('access_token', $token);
             $user->tokens()->delete();

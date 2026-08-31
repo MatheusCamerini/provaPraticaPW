@@ -5,7 +5,19 @@ use Illuminate\Http\Request;
 use App\Models\Filme;
 use Illuminate\Support\Facades\Storage;
 class FilmeController extends Controller{
-    public function create(Request $request){
+    public function create(){
+        return view('filmes.create');
+    }
+    public function showByUser($userId){
+        $filmes = Filme::where('user_id', $userId)->get();
+        return view('filmes.index', compact('filmes'));
+    }
+    public function editForm($id){
+        $filme = Filme::findOrFail($id);
+        if ($filme->user_id !== auth()->id()) { abort(403, 'Acesso não autorizado'); }
+        return view('filmes.edit', compact('filme'));
+    }
+    public function store(Request $request){
         $request->validate([
             'nome' => 'required|max:30',
             'sinopse' => 'required',
@@ -80,8 +92,25 @@ class FilmeController extends Controller{
         return view('filmes.index', compact('filmes'));
     }
     public function search(Request $request){
-        $query = $request->input('query');
-        $filmes = Filme::where('nome', 'like', '%' . $query . '%')->get();
+        $filmes = Filme::query()
+        ->when($userId ?? $request->input('user_id'), function ($q, $uid) {
+            $q->where('user_id', $uid);
+        })
+        ->when($request->input('user_name'), function ($q, $userName) {
+            $q->whereHas('user', function ($qUser) use ($userName) {
+                $qUser->where('name', 'like', '%' . $userName . '%');
+            });
+        })->when($request->input('nome'), function ($q, $nome) {
+            $q->where('nome', 'like', '%' . $nome . '%');
+        })
+        ->when($request->input('categoria'), function ($q, $categoria) {
+            $q->where('categoria', 'like', '%' . $categoria . '%');
+        })
+        ->when($request->input('ano'), function ($q, $ano) {
+            $q->where('ano', 'like', '%' . $ano . '%');
+        })
+        ->get();
+
         return view('filmes.index', compact('filmes'));
     }
 }
