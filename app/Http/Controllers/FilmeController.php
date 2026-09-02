@@ -21,7 +21,7 @@ class FilmeController extends Controller{
     public function editForm($id){
         $filme = Filme::findOrFail($id);
         if ($filme->user_id !== auth()->id()) { abort(403, 'Acesso não autorizado'); }
-        return view('filmes.editForm', compact('filme'));
+        return view('filmes.edit', compact('filme'));
     }
     public function store(Request $request){
         $request->validate([
@@ -30,7 +30,7 @@ class FilmeController extends Controller{
             'ano' => 'required|digits:4|integer|min:1900|max:' . (date('Y') + 1),
             'categoria' => 'required|max:255',
             'trailer' => 'nullable|url|max:2000',
-            'capa' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'capa' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp,avif|max:2048',
         ]);
 
         $filme = new Filme();
@@ -75,7 +75,7 @@ class FilmeController extends Controller{
             'ano' => 'required|digits:4|integer|min:1900|max:' . (date('Y') + 1),
             'categoria' => 'required|max:255',
             'trailer' => 'nullable|url|max:2000',
-            'capa' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'capa' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp,avif|max:2048',
         ]);
 
         $filme->nome = $request->input('nome');

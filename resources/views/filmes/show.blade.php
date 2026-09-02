@@ -4,12 +4,15 @@
 
 @section('content')
     <div class="show-panel">
-        <div class="poster-wrap" style="margin: 0; width: 300px; max-width: 100%;">
-            <img src="{{ $filme->capa_url }}" alt="Capa de {{ $filme->nome }}" class="show-img" style="width: 100%; box-shadow: none; transform: none;">
-            <span class="badge badge-year">{{ $filme->ano }}</span>
-            <span class="badge badge-category">{{ $filme->categoria }}</span>
+        <div class="show-poster-wrap">
+            <img src="{{ $filme->capa_url }}" alt="Capa de {{ $filme->nome }}" class="show-img">
         </div>
         <div class="show-info">
+            <div class="show-badges">
+                <span class="badge-inline badge-year">{{ $filme->ano }}</span>
+                <span class="badge-inline badge-category">{{ $filme->categoria }}</span>
+            </div>
+
             <h1>{{ $filme->nome }}</h1>
             <p class="card-author">Postado por {{ $filme->user->name ?? 'Usuário removido' }}</p>
             <p>{{ $filme->sinopse }}</p>

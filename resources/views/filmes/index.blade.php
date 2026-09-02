@@ -17,7 +17,7 @@
             </div>
             <div class="form-group">
                 <label for="ano">Ano</label>
-                <input type="text" id="ano" name="ano" value="{{ request('ano') }}">
+                <input type="number" min="1900" max="{{ date('Y') + 1 }}" id="ano" name="ano" value="{{ request('ano') }}">
             </div>
             <div class="form-group">
                 <label for="categoria">Categoria</label>
@@ -39,7 +39,7 @@
             <div class="card">
                 <div class="poster-wrap">
                     <a href="{{ route('filmes.show', $filme->id) }}">
-                        <img src="{{ $filme->capa_url }}" alt="Capa de {{ $filme->nome }}" class="card-img">
+                        <img src="{{ Storage::url($filme->capa)}}" alt="Capa de {{ $filme->nome }}" class="card-img">
                     </a>
                     <span class="badge badge-year">{{ $filme->ano }}</span>
                     <span class="badge badge-category">{{ $filme->categoria }}</span>

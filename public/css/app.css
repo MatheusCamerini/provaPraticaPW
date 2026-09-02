@@ -124,12 +124,12 @@ h3 { font-size: 1.05rem; text-transform: none; letter-spacing: -0.01em; }
 
 .link-button {
     background: none;
-    border: none;
+    border: var(--border);
     color: var(--ink-soft);
     cursor: pointer;
     font: inherit;
     font-weight: 600;
-    padding: 0;
+    padding: 4px 8px;
 }
 
 .link-button:hover {
@@ -187,7 +187,6 @@ h3 { font-size: 1.05rem; text-transform: none; letter-spacing: -0.01em; }
     box-shadow: 9px 9px 0 var(--ink);
 }
 
-/* Poster pops out of the card's top edge */
 .poster-wrap {
     position: relative;
     margin: -34px 14px 0;
@@ -288,10 +287,9 @@ h3 { font-size: 1.05rem; text-transform: none; letter-spacing: -0.01em; }
 }
 
 .show-img {
-    width: 300px;
+    width: 100%;
+    height: 100%;
     max-width: 100%;
-    border: var(--border);
-    border-radius: var(--radius-lg);
     object-fit: cover;
     box-shadow: var(--shadow-accent);
     transform: rotate(-1.5deg);
@@ -493,4 +491,49 @@ button[type="submit"] {
     .navbar-links {
         gap: 10px;
     }
+}
+
+.badge-year {
+    top: 10px;
+    right: 10px;
+    background: var(--accent);
+    color: #fff;
+}
+
+.badge-category {
+    bottom: 10px;
+    left: 10px;
+    background: #fff;
+    color: var(--ink);
+}
+/* Ajustes para a página de detalhes */
+.show-poster-wrap {
+    width: 300px;
+    max-width: 100%;
+}
+
+.show-img {
+    width: 100%;
+    border: var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-hard);
+    transform: rotate(-1.5deg);
+    display: block;
+}
+
+.show-badges {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.badge-inline {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border: 2.5px solid var(--ink);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-hard-sm);
 }

@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="profile-header">
-        <img src="{{ $user->profile_picture_url }}" alt="{{ $user->name }}" class="image-preview image-preview-round">
+        <img src="{{ Storage::url($user->profile_picture) }}" alt="{{ $user->name }}" class="image-preview image-preview-round">
         <div>
             <h1>{{ $user->name }}</h1>
             <p>{{ $user->email }}</p>
@@ -17,7 +17,7 @@
             <div class="card">
                 <div class="poster-wrap">
                     <a href="{{ route('filmes.show', $filme->id) }}">
-                        <img src="{{ $filme->capa_url }}" alt="Capa de {{ $filme->nome }}" class="card-img">
+                        <img src="{{ Storage::url($filme->capa) }}" alt="Capa de {{ $filme->nome }}" class="card-img">
                     </a>
                     <span class="badge badge-year">{{ $filme->ano }}</span>
                     <span class="badge badge-category">{{ $filme->categoria }}</span>
