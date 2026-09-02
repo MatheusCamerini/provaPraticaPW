@@ -1,21 +1,27 @@
 <?php
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Filme;
 use Illuminate\Support\Facades\Storage;
+
 class FilmeController extends Controller{
+    public function index(){
+        $filmes = Filme::all();
+        return view('filmes.index', compact('filmes'));
+    }
     public function create(){
         return view('filmes.create');
     }
-    public function showByUser($userId){
-        $filmes = Filme::where('user_id', $userId)->get();
-        return view('filmes.index', compact('filmes'));
+    public function trash(){
+        $filmes = Filme::onlyTrashed()->where('user_id', auth()->id())->latest()->get();
+        return view('filmes.trash', compact('filmes'));
     }
     public function editForm($id){
         $filme = Filme::findOrFail($id);
         if ($filme->user_id !== auth()->id()) { abort(403, 'Acesso não autorizado'); }
-        return view('filmes.edit', compact('filme'));
+        return view('filmes.editForm', compact('filme'));
     }
     public function store(Request $request){
         $request->validate([
@@ -42,13 +48,22 @@ class FilmeController extends Controller{
 
         $filme->save();
 
-        return redirect()->route('dashboard')->with('success', 'Filme criado com sucesso!');
+        return redirect()->route('filmes.index')->with('success', 'Filme criado com sucesso!');
     }
     public function destroy($id){
         $filme = Filme::findOrFail($id);
         if ($filme->user_id !== auth()->id()) { abort(403, 'Acesso não autorizado'); }
         $filme->delete();
-        return redirect()->route('dashboard')->with('success', 'Filme deletado com sucesso!');
+        return redirect()->route('filmes.index')->with('success', 'Filme deletado com sucesso!');
+    }
+    public function forceDelete($id){
+        $filme = Filme::withTrashed()->findOrFail($id);
+        if ($filme->user_id !== auth()->id()) { abort(403, 'Acesso não autorizado'); }
+        if ($filme->capa) {
+            Storage::disk('public')->delete($filme->capa);
+        }
+        $filme->forceDelete();
+        return redirect()->route('filmes.index')->with('success', 'Filme deletado permanentemente com sucesso!');
     }
     public function edit(Request $request, $id){
         $filme = Filme::findOrFail($id);
@@ -79,21 +94,25 @@ class FilmeController extends Controller{
 
         $filme->save();
 
-        return redirect()->route('dashboard')->with('success', 'Filme atualizado com sucesso!');
+        return redirect()->route('filmes.index')->with('success', 'Filme atualizado com sucesso!');
     }
 
     public function show($id){
         $filme = Filme::findOrFail($id);
         return view('filmes.show', compact('filme'));
     }
-
-    public function index(){
-        $filmes = Filme::all();
-        return view('filmes.index', compact('filmes'));
+    public function restore($id)
+    {
+        $filme = Filme::onlyTrashed()->findOrFail($id);
+        if ($filme->user_id !== auth()->id()) {
+            abort(403, 'Acesso não autorizado');
+        }
+        $filme->restore();
+        return redirect()->route('filmes.trash')->with('success', 'Filme restaurado com sucesso!');
     }
     public function search(Request $request){
         $filmes = Filme::query()
-        ->when($userId ?? $request->input('user_id'), function ($q, $uid) {
+        ->when($request->input('user_id'), function ($q, $uid) {
             $q->where('user_id', $uid);
         })
         ->when($request->input('user_name'), function ($q, $userName) {
@@ -109,6 +128,10 @@ class FilmeController extends Controller{
         ->when($request->input('ano'), function ($q, $ano) {
             $q->where('ano', 'like', '%' . $ano . '%');
         })
+        ->when($request->input('sinopse'), function ($q, $sinopse) {
+            $q->where('sinopse', 'like', '%' . $sinopse . '%');
+        })
+        ->latest()
         ->get();
 
         return view('filmes.index', compact('filmes'));

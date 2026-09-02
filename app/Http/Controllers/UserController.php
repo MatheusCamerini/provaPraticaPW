@@ -1,57 +1,82 @@
 <?php
 
-use App\Http\Controllers\Controller;
+namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+
 class UserController extends Controller
 {
+    public function showLoginForm()
+    {
+        return view('user.login');
+    }
+
+    public function showRegisterForm()
+    {
+        return view('user.register');
+    }
+
+    public function profile()
+    {
+        $user = Auth::user();
+        $filmes = $user->filmes()->latest()->get();
+        return view('profile', compact('user', 'filmes'));
+    }
 
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'name' => 'required',
+            'email' => 'required|email',
             'password' => 'required',
         ]);
 
         if (Auth::attempt($credentials)) {
-            $user = Auth::user();
-            $token = $user->createToken('auth_token')->plainTextToken;
-            $request->session()->put('access_token', $token);
-            $user->tokens()->delete();
+            $request->session()->regenerate();
 
-            return redirect()->route('dashboard')->with('success', 'Login realizado com sucesso!');
+            $user = Auth::user();
+            $user->tokens()->delete();
+            $user->createToken('auth_token');
+
+            return redirect()->route('filmes.index')->with('success', 'Login realizado com sucesso!');
         }
 
-        return response()->json(['message' => 'Credenciais inválidas'], 401);
+        return back()->withErrors(['email' => 'Credenciais inválidas'])->onlyInput('email');
     }
+
     public function logout(Request $request)
     {
-        $request->session()->forget('access_token');
+        Auth::user()?->tokens()->delete();
         Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return redirect()->route('login')->with('success', 'Logout realizado com sucesso!');
     }
-    public function singIn(Request $request)
+
+    public function register(Request $request)
     {
         $credentials = $request->validate([
-            'name' => 'required',
-            'password' => 'required',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'email' => 'required|email|unique:users,email',
+            'name' => 'required|max:255',
+            'password' => 'required|min:6|confirmed',
         ]);
 
-        $user = User::where('name', $credentials['name'])->first();
-
-        if ($user) {
-            return response()->json(['message' => 'Usuário já existe'], 400);
-        }
-
         $user = User::create([
+            'profile_picture' => $request->file('profile_picture')
+                ? $request->file('profile_picture')->store('profile_pictures', 'public')
+                : null,
+            'email' => $credentials['email'],
             'name' => $credentials['name'],
             'password' => bcrypt($credentials['password']),
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-        $request->session()->put('access_token', $token);
+        Auth::login($user);
+        $request->session()->regenerate();
+        $user->createToken('auth_token');
 
-        return redirect()->route('dashboard')->with('success', 'Cadastro realizado com sucesso!');
+        return redirect()->route('filmes.index')->with('success', 'Cadastro realizado com sucesso!');
     }
 }
